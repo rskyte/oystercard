@@ -5,7 +5,7 @@ class Oystercard
 
   NEW_CARD_BALANCE = 0
   MAXIMUM_BALANCE = 90
-  MINIMUM_BALANCE = 1
+  MINIMUM_FARE = 1
 
   def initialize(balance = NEW_CARD_BALANCE)
     @balance = balance
@@ -27,6 +27,7 @@ class Oystercard
   end
 
   def touch_out
+    deduct
     @in_journey = false
   end
 
@@ -38,7 +39,11 @@ def over_limit?(amount)
 end
 
 def no_funds?
-  @balance < MINIMUM_BALANCE
+  @balance < MINIMUM_FARE
+end
+
+def deduct(amount = MINIMUM_FARE)
+  @balance -= amount
 end
 
 

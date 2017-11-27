@@ -19,11 +19,6 @@ subject(:card) { described_class.new }
     maxed_limit}"
   end
 
-  it "should be able to deduct money for travel" do
-    card.topup(20)
-    expect{card.deduct(10)}.to change{card.balance}.by -10
-  end
-
   it "should have an in_journey attribute" do
     expect(card).to respond_to(:in_journey)
   end
@@ -43,6 +38,12 @@ subject(:card) { described_class.new }
 
   it "should not let you touch in with balance less than 1" do
     expect {card.touch_in}.to raise_error "Insufficient Funds"
+  end
+
+  it "should deduct the minimum fare for a journey when touching out" do
+    card.topup(20)
+    card.touch_in
+    expect {card.touch_out}.to change {card.balance}.by(-Oystercard::MINIMUM_FARE)
   end
 
 
