@@ -28,5 +28,23 @@ subject(:card) { described_class.new }
     expect(card).to respond_to(:in_journey)
   end
 
+  it "should touch in" do
+    card.topup(20)
+    card.touch_in
+    expect(card.in_journey).to eq true
+  end
 
-end
+  it "should touch out" do
+    card.topup(20)
+    card.touch_in
+    card.touch_out
+    expect(card.in_journey).to eq false
+  end
+
+  it "should not let you touch in with balance less than 1" do
+    expect {card.touch_in}.to raise_error "Insufficient Funds"
+  end
+
+
+
+  end
