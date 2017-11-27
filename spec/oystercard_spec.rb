@@ -19,4 +19,14 @@ subject(:card) { described_class.new }
     maxed_limit}"
   end
 
+  it "should be able to deduct money for travel" do
+    card.topup(20)
+    expect{card.deduct(10)}.to change{card.balance}.by -10
+  end
+
+  it "should have an in_journey attribute" do
+    expect(card).to respond_to(:in_journey)
+  end
+
+
 end
