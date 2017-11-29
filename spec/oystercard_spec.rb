@@ -23,16 +23,12 @@ describe Oystercard do
 
   context 'Card in use' do
 
-    it 'should have an in_journey attribute' do
-      expect(card).to respond_to(:in_journey)
-    end
-
     describe '#touch_in' do
 
       it 'should touch in' do
         card.topup(20)
         card.touch_in(station)
-        expect(card.in_journey).to eq true
+        expect(card.in_journey?).to eq true
       end
 
       it 'should not let you touch in with balance less than 1' do
@@ -47,22 +43,21 @@ describe Oystercard do
     end
 
     describe '#touch_out' do
-      it 'should touch out' do
+      before do
         card.topup(20)
         card.touch_in(station)
+      end
+
+      it 'should touch out' do
         card.touch_out
-        expect(card.in_journey).to eq false
+        expect(card.in_journey?).to eq false
       end
 
       it 'should deduct the minimum fare for a journey when touching out' do
-        card.topup(20)
-        card.touch_in(station)
         expect { card.touch_out }.to change { card.balance }.by(-Oystercard::MINIMUM_FARE)
       end
 
       it 'forgets entry station at touch out' do
-        card.topup(20)
-        card.touch_in(station)
         card.touch_out
         expect(card.entry_station).to eq nil
       end
