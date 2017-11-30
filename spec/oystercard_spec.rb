@@ -7,6 +7,10 @@ describe Oystercard do
     fare: Oystercard::MINIMUM_FARE,
     start: double(:my_journey1, finish: true, fare: Oystercard::MINIMUM_FARE),
     )}
+  let(:penalty_journey) { double(:my__penalty_journey,
+    finish: true,
+    start: double(:my_penalty_journey1, finish: true, fare: Oystercard::PENALTY_FARE),
+    fare: Oystercard::PENALTY_FARE) }
   before do |example|
     unless example.metadata[:skip_before]
       card.topup(20)
@@ -38,9 +42,11 @@ describe Oystercard do
         expect(card.in_journey?).to eq true
       end
 
-      it 'doesn"t allow double touch in' do
-        expect { card.touch_in(station, journey) }
-          .to raise_error 'Must touch out before starting new journey'
+      it 'charges penalty fare for double touch in' do
+        card.touch_out(station)
+        card.touch_in(station, penalty_journey)
+        expect { card.touch_in(station, penalty_journey) }.to change { card.balance }
+        .by -Oystercard::PENALTY_FARE
       end
 
       it 'should not let you touch in with balance less than 1', :skip_before do

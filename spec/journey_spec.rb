@@ -27,7 +27,7 @@ describe Journey do
 
   it 'should charge the pentalty fare for incomplete journeys' do
     journey.finish(station)
-    expect(journey.fare).to eq Journey::PENALTY_FARE
+    expect(journey.fare).to eq Oystercard::PENALTY_FARE
   end
 
   it 'should be able to set journey status to complete for a complete journey'  do
