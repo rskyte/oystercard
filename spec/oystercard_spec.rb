@@ -3,10 +3,14 @@ require 'oystercard.rb'
 describe Oystercard do
   subject(:card) { described_class.new }
   let(:station) { double(:my_station, name: 'name') }
+  let(:journey) { double(:my_journey,
+    fare: Oystercard::MINIMUM_FARE,
+    start: double(:my_journey1, finish: true, fare: Oystercard::MINIMUM_FARE),
+    )}
   before do |example|
     unless example.metadata[:skip_before]
       card.topup(20)
-      card.touch_in(station)
+      card.touch_in(station, journey)
     end
   end
 
@@ -34,30 +38,34 @@ describe Oystercard do
         expect(card.in_journey?).to eq true
       end
 
-      it 'should not let you touch in with balance less than 1', :skip_before do
-        expect { card.touch_in(station) }
-          .to raise_error 'Insufficient Funds'
+      it 'doesn"t allow double touch in' do
+        expect { card.touch_in(station, journey) }
+          .to raise_error 'Must touch out before starting new journey'
       end
 
-      it 'remembers touch in station' do
-        expect(card.entry_station).to eq 'name'
+      it 'should not let you touch in with balance less than 1', :skip_before do
+        expect { card.touch_in(station, journey) }
+          .to raise_error 'Insufficient Funds'
       end
     end
 
     describe '#touch_out' do
 
       it 'should touch out' do
-        card.touch_out
+        card.touch_out(station)
         expect(card.in_journey?).to eq false
       end
 
-      it 'should deduct the minimum fare for a journey when touching out' do
-        expect { card.touch_out }.to change { card.balance }.by(-Oystercard::MINIMUM_FARE)
+      it 'should deduct the correct fare for a journey when touching out' do
+        expect { card.touch_out(station) }.to change { card.balance }.by(-Oystercard::MINIMUM_FARE)
       end
 
-      it 'forgets entry station at touch out' do
-        card.touch_out
-        expect(card.entry_station).to eq nil
+      it 'records journey history' do
+        expect { card.touch_out(station) }.to change { card.journey_list.size }.by 1
+      end
+
+      it 'creates a new journey if there is no current journey' do
+        expect { card.touch_out(station) }.to change { card.journey_list.size }.by 1
       end
     end
   end
