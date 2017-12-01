@@ -26,7 +26,7 @@ class Journey
   end
 
   def calc_fare
-     (@start_zone - @end_zone).abs + 1
+     (@start_zone - @end_zone).abs + Oystercard::MINIMUM_FARE
   end
 
   def choose_fare
