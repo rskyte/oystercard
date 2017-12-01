@@ -1,19 +1,17 @@
 require_relative 'station'
-require_relative 'journey'
+require_relative 'journey_log'
 
 class Oystercard
   attr_accessor :balance
-  attr_reader :journey_list
 
   NEW_CARD_BALANCE = 0
   MAXIMUM_BALANCE = 90
   MINIMUM_FARE = 1
   PENALTY_FARE = 6
 
-  def initialize(balance = NEW_CARD_BALANCE)
+  def initialize(balance = NEW_CARD_BALANCE, journey_log = JourneyLog.new)
     @balance = balance
-    @journey_list = []
-    @current_journey = nil
+    @journey_log = journey_log
   end
 
   def topup(amount)
@@ -21,34 +19,38 @@ class Oystercard
     @balance += amount
   end
 
-  def touch_in(station, journey = Journey.new)
-    double_touch_in if in_journey?
-    #raise 'Must touch out before starting new journey' if in_journey?
+  def touch_in(station)
+    journey_admin if in_journey?
     raise 'Insufficient Funds' if no_funds?
-    @current_journey = journey.start(station)
+    journey_log.start(station)
   end
 
-  def touch_out(station, journey = Journey.new)
-    @current_journey = journey if !in_journey?
-    @current_journey.finish(station)
-    deduct(@current_journey.fare)
-    journey_reset
+  def touch_out(station)
+    raise 'Insufficient Funds' if no_funds?
+    journey_log.finish(station)
+    journey_admin
   end
 
   def in_journey?
-    !!@current_journey
+    journey_log.in_journey?
+  end
+
+  def read_journeys
+    journey_log.journeys
   end
 
   private
 
-  def double_touch_in
-    deduct(@current_journey.fare)
-    journey_reset
+  def journey_log
+    @journey_log
   end
 
-  def journey_reset
-    @journey_list << @current_journey
-    @current_journey = nil
+  def journey_admin
+    deduct(get_fare)
+  end
+
+  def get_fare
+    journey_log.fare
   end
 
   def over_limit?(amount)

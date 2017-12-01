@@ -1,8 +1,8 @@
 require 'journey'
 
 describe Journey do
-  let(:station) {double(:my_station, name: 'name')}
-  subject(:journey) {described_class.new}
+  let(:station) { double(:my_station, name: 'name', zone: 3) }
+  subject(:journey) { described_class.new }
 
   it 'should record the origin of the journey' do
     journey.start(station)
@@ -34,6 +34,12 @@ describe Journey do
     journey.start(station)
     journey.finish(station)
     expect(journey.complete?).to be true
+  end
+
+  it 'calculates the correct fare' do
+    journey.start(station)
+    allow(station).to receive(:zone) { 5 }
+    expect {journey.finish(station) }.to change { journey.fare }.by 3
   end
 
 end

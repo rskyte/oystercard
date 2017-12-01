@@ -1,16 +1,22 @@
 require_relative 'station'
 
 class Journey
-  attr_reader :start_point, :end_point
+  attr_reader :start_point, :end_point, :fare
+
+  def initialize
+    @fare = 0
+  end
 
   def start(station)
     @start_point = station.name
+    @start_zone = station.zone
     @complete = try_to_complete_journey
     self
   end
 
   def finish(station)
     @end_point = station.name
+    @end_zone = station.zone
     @complete = try_to_complete_journey
     self
   end
@@ -19,12 +25,22 @@ class Journey
     !!@start_point && !!@end_point
   end
 
+  def calc_fare
+     (@start_zone - @end_zone).abs + 1
+  end
+
+  def choose_fare
+    complete? ? calc_fare : Oystercard::PENALTY_FARE
+  end
+
   def fare
-    complete? ? Oystercard::MINIMUM_FARE : Oystercard::PENALTY_FARE
+    @fare += choose_fare
   end
 
   def complete?
     @complete
   end
+
+
 
 end
